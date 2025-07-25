@@ -38,6 +38,14 @@ class BookingRepository {
             );
         }
     }
+
+    async findAllBookings() {
+    try {
+      return await Booking.findAll();
+    } catch (err) {
+      throw err;
+    }
+  }
 }
 
 module.exports = BookingRepository;

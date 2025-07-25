@@ -76,8 +76,35 @@ class BookingService {
         }
     }
 
+    async getAllBookingsWithVaccineDetails() {
+    const bookings = await this.bookingRepository.findAllBookings();
 
-    
+    const detailedBookings = await Promise.all(
+      bookings.map(async (booking) => {
+        let vaccineData = {};
+        try {
+          const response = await axios.get(
+            `${VACCINE_SERVICE_PATH}/api/v1/vaccine/${booking.vaccineId}`
+          );
+          vaccineData = response.data.data;
+        } catch (error) {
+          console.log(`Vaccine fetch failed for ID ${booking.vaccineId}:`, error.message);
+        }
+        return {
+          id: booking.id,
+          userId: booking.userId,
+          vaccineId: booking.vaccineId,
+          vaccineName: vaccineData?.name || 'N/A',
+          noOfDoses: booking.noOfDoses,
+          totalCost: booking.totalCost,
+          status: booking.status,
+          createdAt: booking.createdAt,
+        };
+      })
+    );
+
+    return detailedBookings;
+  } 
 }
 
 module.exports = BookingService;
