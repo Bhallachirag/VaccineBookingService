@@ -2,6 +2,7 @@ const axios = require('axios');
 
 const { BookingRepository } = require('../repository/index');
 const { VACCINE_SERVICE_PATH } = require('../config/serverConfig');
+const { AUTH_SERVICE_PATH } = require('../config/serverConfig');
 const { ServiceError } = require('../utils/errors');
 
 class BookingService {
@@ -14,7 +15,6 @@ class BookingService {
     const response = await axios.get(url);
     const inventories = response.data.data;
 
-    // Sort inventories by expiry date (soonest first)
     inventories.sort((a, b) => new Date(a.expiryDate) - new Date(b.expiryDate));
 
     let remainingDoses = noOfDoses;
@@ -104,7 +104,29 @@ class BookingService {
     );
 
     return detailedBookings;
-  } 
+  }
+
+
+  async findOrderById(id) {
+  const booking = await this.bookingRepository.get(id);
+  if (!booking) {
+    throw new Error("Booking not found");
+  }
+  try {
+    const userRes = await axios.get(`${AUTH_SERVICE_PATH}/api/v1/users/${booking.userId}`);
+    console.log("User API response:", userRes.data);
+    const user = userRes.data.data;
+    booking.dataValues.user = {
+      email: user.email,
+      phoneNo: user.mobileNumber
+    };  
+    console.log("Fetched user details in booking:", booking.dataValues.user);
+  } catch (err) {
+    console.error("Failed to fetch user data:", err.message);
+    booking.dataValues.user = null;
+  }
+    return booking;
+  }
 }
 
 module.exports = BookingService;

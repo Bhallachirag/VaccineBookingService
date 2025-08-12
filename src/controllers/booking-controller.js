@@ -18,7 +18,7 @@ const create = async (req,res) => {
             return res.status(error.statusCodes).json({
             message: error.message,
             success: false,
-            err: error.explanation,
+            err: error.explanation, 
             data: {}
         });
     }
@@ -44,7 +44,28 @@ const getAllBookingsWithVaccineDetails = async (req, res) => {
   }
 };
 
+const getBookingById = async (req, res) => {
+  try {
+    const booking = await bookingService.findOrderById(req.params.id);
+    return res.status(StatusCodes.OK).json({
+      success: true,
+      message: 'Successfully fetched booking with user details',
+      data: booking,
+      err: {}
+    });
+  } catch (error) {
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: 'Failed to fetch booking',
+      data: {},
+      err: error.message
+    });
+  }
+};
+
+
 module.exports = {
     create,
-    getAllBookingsWithVaccineDetails
+    getAllBookingsWithVaccineDetails,
+    getBookingById
 }
