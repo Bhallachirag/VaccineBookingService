@@ -39,8 +39,26 @@ class BookingService {
 
     return totalCost;
 }
+
+    async validateUserExists(userId) {
+        try {
+            const userResponse = await axios.get(`${AUTH_SERVICE_PATH}/api/v1/users/${userId}`);
+            return userResponse.data.success && userResponse.data.data;
+        } catch (error) {
+            return false;
+        }
+    } 
+ 
     async createBooking(data) {
         try {
+          const userExists = await this.validateUserExists(data.userId);
+            if (!userExists) {
+                throw new ServiceError(
+                    'Booking Failed,You are not registered',
+                    `User with ID ${data.userId} does not exist`,
+                    404
+                );
+            }
             const vaccineId = data.vaccineId;
             const getVaccineRequestURL = `${VACCINE_SERVICE_PATH}/api/v1/vaccine/${vaccineId}`;
             const response = await axios.get(getVaccineRequestURL);
