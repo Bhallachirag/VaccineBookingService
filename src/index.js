@@ -1,9 +1,18 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const cors = require('cors');
 
 const app = express();
+const { PORT,VACCINE_FRONTEND_PATH } = require('./config/serverConfig');
 
-const { PORT } = require('./config/serverConfig');
+app.use(cors({
+        origin: VACCINE_FRONTEND_PATH,
+        credentials: true,
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization']
+    }));
+
+
 const apiRoutes = require('./routes/index');
 const db = require('./models/index');
 

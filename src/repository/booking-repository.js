@@ -60,6 +60,18 @@ class BookingRepository {
             );
         }
     }
+
+    async findByUser(userId) {
+    try {
+      return await Booking.findAll({
+        where: { userId },
+        order: [['createdAt', 'DESC']]
+      });
+    } catch (error) {
+      console.error("Error in BookingRepository.findByUser:", error.message);
+      throw error;
+    }
+  }
 }
 
 module.exports = BookingRepository;

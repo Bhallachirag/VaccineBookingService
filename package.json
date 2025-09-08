@@ -11,12 +11,16 @@
   "dependencies": {
     "axios": "^1.10.0",
     "body-parser": "^2.2.0",
+    "cors": "^2.8.5",
+    "cron": "^4.3.3",
+    "crons": "^1.1.1-alpha.0",
     "dotenv": "^17.2.0",
     "express": "^5.1.0",
     "http-status-codes": "^2.3.0",
     "morgan": "^1.10.1",
     "mysql2": "^3.14.2",
     "nodemon": "^3.1.10",
+    "razorpay": "^2.9.6",
     "sequelize": "^6.37.7",
     "sequelize-cli": "^6.6.3"
   }

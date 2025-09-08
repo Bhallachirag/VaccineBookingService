@@ -1,7 +1,7 @@
 const { BookingService }  = require('../services/index');
 const { StatusCodes } = require('http-status-codes');
 
-const { VACCINE_SERVICE_PATH } = require('../config/serverConfig');
+const { VACCINE_SERVICE_PATH, REMINDER_SERVICE_PATH, AUTH_SERVICE_PATH } = require('../config/serverConfig');
 
 const bookingService = new BookingService();
 
