@@ -76,4 +76,5 @@ RAZORPAY_WEBHOOK_SECRET=your_razorpay_webhook_secret
 - [Reminder Service](https://github.com/Bhallachirag/ReminderService)
 
 ### Author
--Chirag Bhalla
+
+- **Chirag Bhalla**
