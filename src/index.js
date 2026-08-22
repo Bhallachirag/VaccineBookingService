@@ -6,7 +6,7 @@ const app = express();
 const { PORT, VACCINE_FRONTEND_PATH } = require('./config/serverConfig');
 
 app.use(cors({
-    origin: VACCINE_FRONTEND_PATH || true,
+    origin: (origin, callback) => callback(null, true),
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'x-access-token']
