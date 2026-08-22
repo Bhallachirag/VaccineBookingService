@@ -3,15 +3,14 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 
 const app = express();
-const { PORT,VACCINE_FRONTEND_PATH } = require('./config/serverConfig');
+const { PORT, VACCINE_FRONTEND_PATH } = require('./config/serverConfig');
 
 app.use(cors({
-        origin: VACCINE_FRONTEND_PATH,
-        credentials: true,
-        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-        allowedHeaders: ['Content-Type', 'Authorization']
-    }));
-
+    origin: VACCINE_FRONTEND_PATH || true,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-access-token']
+}));
 
 const apiRoutes = require('./routes/index');
 const db = require('./models/index');
@@ -19,16 +18,14 @@ const db = require('./models/index');
 const setupAndStartServer = () => {
 
     app.use(bodyParser.json());
-    app.use(bodyParser.urlencoded({extended: true}));   
-    // app.get('/api/v1/home', (req,res) => {
-    //     return res.json({message: 'Hitting the booking service'});
-    // })
+    app.use(bodyParser.urlencoded({ extended: true }));   
+
     app.use('/api', apiRoutes);
 
     app.listen(PORT, () => {
         console.log(`Server started on PORT ${PORT}`);
         if(process.env.DB_SYNC) {
-            db.sequelize.sync({alter: true}); 
+            db.sequelize.sync({ alter: true }); 
         }
     });
 }

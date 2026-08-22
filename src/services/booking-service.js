@@ -79,7 +79,7 @@ class BookingService {
           0
         ),
         totalCost: grandTotal,
-        status: "Booked",
+        status: "InProcess",
         notes: JSON.stringify({
           isCartOrder: true,
           cartItems: itemDetails,

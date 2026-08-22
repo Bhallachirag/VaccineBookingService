@@ -4,8 +4,8 @@ const axios = require('axios');
 const { BookingController } = require('../../controllers/index');
 const BookingService = require('../../services/booking-service');
 const bookingService = new BookingService();
-const { REMINDER_SERVICE_PATH,AUTH_SERVICE_PATH } = require('../../config/serverConfig');
-const { createCartPaymentLink } = require('../../services/paymentService');
+const { REMINDER_SERVICE_PATH, AUTH_SERVICE_PATH } = require('../../config/serverConfig');
+const { createCartPaymentLink, updatePaymentInformation } = require('../../services/paymentService');
 
 const router = express.Router();
 
@@ -89,20 +89,30 @@ router.post('/cart/checkout', async (req, res) => {
       message: `Payment link created for ${cartItems.length} vaccines`,
     });
 
-
   } catch (error) {
-    console.error("Cart checkout error:", error.message);
+    console.error("Cart checkout error details:", error);
     res.status(500).json({
       success: false,
-      message: error.message || "Internal server error during checkout"
+      message: error.message || error.explanation || "Internal server error during checkout",
+      errorDetails: error
     });
   }
 });
 
-
 router.get('/bookings/user/:userId', async (req, res) => {
   try {
-    const userId = req.params.userId;
+    let userId = req.params.userId;
+
+    if (isNaN(userId)) {
+      try {
+        const userRes = await axios.get(`${AUTH_SERVICE_PATH}/api/v1/users/email/${userId}`);
+        if (userRes.data && userRes.data.data) {
+          userId = userRes.data.data.id;
+        }
+      } catch (err) {
+        console.warn("Could not resolve email to userId:", err.message);
+      }
+    }
 
     const bookings = await bookingService.getBookingsByUser(userId);
 
@@ -117,5 +127,33 @@ router.get('/bookings/user/:userId', async (req, res) => {
   }
 });
 
+router.post('/verify-payment', async (req, res) => {
+  try {
+    const result = await updatePaymentInformation(req.body);
+    res.json({ success: true, message: result.message, data: result });
+  } catch (error) {
+    console.error("Verify payment error:", error.message);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+router.post('/razorpay-webhook', async (req, res) => {
+  try {
+    const event = req.body;
+    if (event.event === 'payment_link.paid' || event.event === 'payment.captured') {
+      const entity = event.payload?.payment_link?.entity || event.payload?.payment?.entity;
+      if (entity) {
+        const paymentId = entity.payment_id || entity.id;
+        const referenceId = entity.reference_id;
+        await updatePaymentInformation({ payment_id: paymentId, reference_id: referenceId });
+        return res.json({ status: 'ok', message: 'Payment confirmed & booking status updated to Booked' });
+      }
+    }
+    res.json({ status: 'ok', message: 'Event logged' });
+  } catch (error) {
+    console.error("Razorpay webhook error:", error.message);
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+});
 
 module.exports = router;
