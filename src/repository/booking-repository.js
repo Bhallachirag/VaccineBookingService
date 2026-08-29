@@ -9,13 +9,14 @@ class BookingRepository {
             const booking = await Booking.create(data);
             return booking; 
         } catch (error) { 
+            console.error("BookingRepository create error:", error);
             if(error.name == 'SequelizeValidationError') {
                 throw new ValidationError(error);
             }
             throw new AppError(
                 'RepositoryError', 
                 'Cannot create Booking', 
-                'There was some issue creating the booking, please try again later',
+                error.message || 'There was some issue creating the booking, please try again later',
                 StatusCodes.INTERNAL_SERVER_ERROR
             );
         }
