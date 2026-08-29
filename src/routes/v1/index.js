@@ -46,17 +46,23 @@ router.post('/cart/checkout', async (req, res) => {
       });
     }
 
-    if (isNaN(userId)) {
-      try {
-        const userRes = await axios.get(`${AUTH_SERVICE_PATH}/api/v1/users/email/${userId}`);
-        if (!userRes.data || !userRes.data.data) {
-          return res.status(404).json({ success: false, message: "User not found" });
-        }
-        userId = userRes.data.data.id;
-      } catch (err) {
-        console.error("Failed to resolve email:", err.message);
-        return res.status(500).json({ success: false, message: "User resolution failed" });
+    // Step 1: Resolve email -> numeric userId AND capture userDetails in one shot
+    let userDetails;
+    try {
+      const isEmail = String(userId).includes('@');
+      const userEndpoint = isEmail
+        ? `${AUTH_SERVICE_PATH}/api/v1/users/email/${encodeURIComponent(userId)}`
+        : `${AUTH_SERVICE_PATH}/api/v1/users/${userId}`;
+
+      const userRes = await axios.get(userEndpoint);
+      if (!userRes.data || !userRes.data.data) {
+        return res.status(404).json({ success: false, message: "User not found" });
       }
+      userDetails = userRes.data.data;
+      userId = userDetails.id; // always use numeric id for booking
+    } catch (err) {
+      console.error("Failed to fetch user:", err.message);
+      return res.status(500).json({ success: false, message: "User fetch failed" });
     }
 
     const cartData = {
@@ -66,25 +72,6 @@ router.post('/cart/checkout', async (req, res) => {
         noOfDoses: item.quantity || item.noOfDoses
       }))
     };
-
-    let userDetails;
-    try {
-      const isEmail = String(userId).includes('@');
-      const userEndpoint = isEmail 
-        ? `${AUTH_SERVICE_PATH}/api/v1/users/email/${userId}` 
-        : `${AUTH_SERVICE_PATH}/api/v1/users/${userId}`;
-        
-      const userRes = await axios.get(userEndpoint);
-      userDetails = userRes.data.data;
-      
-      // If we looked up by email, ensure we use the actual numeric user ID for the booking
-      if (isEmail && userDetails.id) {
-        cartData.userId = userDetails.id;
-      }
-    } catch (err) {
-      console.error("Failed to fetch user:", err.message);
-      return res.status(500).json({ success: false, message: "User fetch failed" });
-    }
 
     const paymentResult = await createCartPaymentLink(cartData, {
       email: userDetails.email,
