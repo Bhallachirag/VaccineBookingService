@@ -20,7 +20,7 @@ const createCartPaymentLink = async (cartData, user) => {
             email: true
         },
         reference_id: `CART_${cartBooking.bookingId}`,
-        callback_url: `${VACCINE_FRONTEND_PATH}/`,
+        callback_url: `${(VACCINE_FRONTEND_PATH || 'https://bhalla-vaxflow.vercel.app').replace(/\/$/, '')}/orders`,
         callback_method: 'get',
         notes: {
             booking_id: cartBooking.bookingId,
