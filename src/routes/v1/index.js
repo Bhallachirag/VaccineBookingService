@@ -51,7 +51,7 @@ router.post('/cart/checkout', async (req, res) => {
     try {
       const isEmail = String(userId).includes('@');
       const userEndpoint = isEmail
-        ? `${AUTH_SERVICE_PATH}/api/v1/users/email/${userId}`
+        ? `${AUTH_SERVICE_PATH}/api/v1/users/by-email?email=${userId}`
         : `${AUTH_SERVICE_PATH}/api/v1/users/${userId}`;
 
       const userRes = await axios.get(userEndpoint);
