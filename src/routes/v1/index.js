@@ -69,8 +69,18 @@ router.post('/cart/checkout', async (req, res) => {
 
     let userDetails;
     try {
-      const userRes = await axios.get(`${AUTH_SERVICE_PATH}/api/v1/users/${userId}`);
+      const isEmail = String(userId).includes('@');
+      const userEndpoint = isEmail 
+        ? `${AUTH_SERVICE_PATH}/api/v1/users/email/${userId}` 
+        : `${AUTH_SERVICE_PATH}/api/v1/users/${userId}`;
+        
+      const userRes = await axios.get(userEndpoint);
       userDetails = userRes.data.data;
+      
+      // If we looked up by email, ensure we use the actual numeric user ID for the booking
+      if (isEmail && userDetails.id) {
+        cartData.userId = userDetails.id;
+      }
     } catch (err) {
       console.error("Failed to fetch user:", err.message);
       return res.status(500).json({ success: false, message: "User fetch failed" });
