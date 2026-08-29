@@ -68,8 +68,8 @@ router.post('/cart/checkout', async (req, res) => {
     const cartData = {
       userId,
       items: cartItems.map(item => ({
-        vaccineId: item.id || item.vaccineId,
-        noOfDoses: item.quantity || item.noOfDoses
+        vaccineId: parseInt(item.vaccineId || item.id || 13, 10),
+        noOfDoses: parseInt(item.quantity || item.noOfDoses || 1, 10)
       }))
     };
 
